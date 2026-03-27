@@ -629,13 +629,20 @@ function analyze(p) {
         let dollarSave;
 
         if (u.switchFuel && u.id === "heat_pump") {
+            // Heat pump replaces both heating (COP~3) and cooling (higher SEER)
             let remH = heating * (1 - cumHR*0.5) * calFactor;
             let oldHC = remH * hfp, newHC = remH * prices.e / 3.0;
-            dollarSave = (oldHC - newHC) * 0.5 + cs * cp;
+            let heatSave = oldHC - newHC; // Can be negative in cheap-gas states
+            let coolSave = cs * cp; // Always saves on cooling (better SEER)
+            dollarSave = heatSave * 0.85 + coolSave; // 85% of heating converted
+            // In cheap-gas states, flag that this is a carbon play not a cost play
+            if (dollarSave < 50 && heatSave < 0) {
+                dollarSave = Math.max(coolSave * 0.5, 0); // At least cooling savings
+            }
         } else if (u.switchFuel && u.id === "hpwh") {
             let remWH = wh * calFactor;
             let oldWC = remWH * whp, newWC = remWH * prices.e / 3.5;
-            dollarSave = (oldWC - newWC) * 0.65;
+            dollarSave = Math.max((oldWC - newWC) * 0.75, 0);
         } else {
             dollarSave = hs*hfp + cs*cp + ws*whp + os*op;
         }
@@ -655,6 +662,15 @@ function analyze(p) {
                 ? "Because you'll improve the envelope first, your heat pump can be sized smaller — saving ~15% on equipment cost."
                 : "Tip: Insulate and air seal first to reduce the heat pump size needed (save $1,500-$3,700 on equipment).";
             if (envDone) { cLo = Math.round(cLo*0.85); cHi = Math.round(cHi*0.85); cMid = Math.round((cLo+cHi)/2); }
+        }
+        // Note when electrification doesn't save money but saves carbon
+        if (u.switchFuel && dollarSave < 100 && p.heatFuel !== "electricity") {
+            const fuelName = p.heatFuel.replace(/_/g,' ');
+            if (u.id === "heat_pump") {
+                intNote += (intNote ? " " : "") + `Note: With ${state}'s low ${fuelName} prices, a heat pump may not reduce your bill significantly. The primary benefit is carbon reduction and cooling efficiency. Consider when your furnace/AC needs replacement.`;
+            } else if (u.id === "hpwh") {
+                intNote += (intNote ? " " : "") + `Note: With low ${fuelName} prices in your area, the dollar savings are modest. Consider when your current water heater needs replacement.`;
+            }
         }
         if (u.cat === "envelope") envDone = true;
 
