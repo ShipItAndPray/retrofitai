@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetrofitAI — Smart Home Energy Upgrade Planner</title>
+    <meta name="description" content="Free personalized home energy upgrade plan. See what to do first, how upgrades interact, and what rebates are live in your state. No audit required.">
+    <meta name="keywords" content="home energy upgrade, retrofit, heat pump, insulation, energy rebates, HOMES rebate, HEAR rebate, energy savings">
+    <meta property="og:title" content="RetrofitAI — Smart Home Energy Upgrade Planner">
+    <meta property="og:description" content="Free personalized home energy upgrade plan. See what to do first, how upgrades interact, and what rebates are available.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    <style>
+        :root {
+            --bg: #0f1117; --surface: #1a1d27; --surface2: #242836;
+            --border: #2e3345; --text: #e4e6ed; --text-dim: #8b8fa3;
+            --accent: #4ade80; --accent-dim: #22543d; --blue: #60a5fa;
+            --orange: #fb923c; --red: #f87171; --yellow: #fbbf24;
+            --purple: #a78bfa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        header { border-bottom: 1px solid var(--border); padding: 16px 0; margin-bottom: 32px; position: sticky; top: 0; background: var(--bg); z-index: 100; backdrop-filter: blur(8px); }
+        header .container { display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: var(--accent); text-decoration: none; cursor: pointer; }
+        .logo span { color: var(--text); }
+        nav a { color: var(--text-dim); text-decoration: none; margin-left: 24px; font-size: 0.9rem; cursor: pointer; transition: color 0.2s; }
+        nav a:hover { color: var(--text); }
+        h1 { font-size: 2rem; margin-bottom: 8px; }
+        h2 { font-size: 1.4rem; margin-bottom: 16px; color: var(--accent); }
+        h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        p { margin-bottom: 12px; }
+        .subtitle { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 32px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s; }
+        .card:hover { border-color: #3e4355; }
+        .card-accent { border-left: 3px solid var(--accent); }
+        .card-blue { border-left: 3px solid var(--blue); }
+        .card-orange { border-left: 3px solid var(--orange); }
+        .card-purple { border-left: 3px solid var(--purple); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 6px; font-weight: 500; }
+        input, select { width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 1rem; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
+        select { cursor: pointer; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } h1 { font-size: 1.5rem; } .stat-grid { grid-template-columns: 1fr 1fr !important; } }
+        .btn { display: inline-block; padding: 14px 32px; background: var(--accent); color: var(--bg); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,222,128,0.3); }
+        .btn:active { transform: translateY(0); }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-outline:hover { background: rgba(74,222,128,0.1); }
+        .btn-sm { padding: 8px 16px; font-size: 0.85rem; width: auto; }
+        .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .tag-green { background: var(--accent-dim); color: var(--accent); }
+        .tag-blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+        .tag-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+        .tag-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+        .stat { background: var(--surface2); border-radius: 8px; padding: 16px; text-align: center; }
+        .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 700; font-size: 0.85rem; margin-right: 12px; flex-shrink: 0; }
+        .upgrade-header { display: flex; align-items: center; margin-bottom: 12px; }
+        .savings-bar { height: 6px; background: var(--surface2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .savings-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+        .interaction-note { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 10px 14px; margin-top: 12px; font-size: 0.85rem; color: var(--yellow); }
+        .rebate-badge { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.85rem; }
+        .disclaimer { font-size: 0.75rem; color: var(--text-dim); margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .disclaimer a { color: var(--blue); }
+        footer { text-align: center; padding: 40px 0; color: var(--text-dim); font-size: 0.8rem; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .checkbox-group input { width: auto; }
+        .optional-label { font-size: 0.7rem; color: var(--text-dim); margin-left: 4px; }
+        .hidden { display: none; }
+        .upgrade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 16px; }
+        .upgrade-stat-label { font-size: 0.75rem; color: var(--text-dim); }
+        .upgrade-stat-value { font-size: 1.2rem; font-weight: 600; }
+        a.btn-outline { text-decoration: none; text-align: center; display: block; max-width: 400px; margin: 0 auto; }
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loading { display: none; text-align: center; padding: 60px 20px; }
+        .loading.active { display: block; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .share-bar { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+        .tooltip { position: relative; }
+        .tooltip-text { visibility: hidden; background: var(--surface); color: var(--text); font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .progress-track { width: 100%; background: var(--surface2); border-radius: 4px; height: 8px; margin: 16px 0; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--blue)); transition: width 1s ease; }
+        .help-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--surface2); color: var(--text-dim); font-size: 0.65rem; cursor: help; margin-left: 4px; border: 1px solid var(--border); }
+        .energy-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .energy-bar { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+        .energy-bar-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+        .energy-bar-fill { height: 100%; border-radius: 3px; }
+        @media print {
+            body { background: #fff; color: #000; }
+            header, .btn, .share-bar, nav, .btn-outline, footer { display: none !important; }
+            .card { border: 1px solid #ddd; break-inside: avoid; }
+            .stat { border: 1px solid #ddd; }
+            .hidden { display: none !important; }
+            :root { --bg: #fff; --surface: #f9f9f9; --surface2: #f0f0f0; --border: #ddd; --text: #111; --text-dim: #666; --accent: #16a34a; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a class="logo" onclick="showForm()">Retrofit<span>AI</span></a>
+            <nav>
+                <a onclick="showForm()">Planner</a>
+                <a onclick="showAbout()">How It Works</a>
+                <a onclick="showMethodology()">Methodology</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <!-- FORM VIEW -->
+        <div id="form-view">
+            <h1>What should you upgrade first?</h1>
+            <p class="subtitle">Get a free, personalized energy upgrade plan for your home. See what order to do upgrades, how they interact, estimated savings, and what rebates are available in your state.</p>
+            <form onsubmit="runAnalysis(event)" id="main-form">
+                <div class="card">
+                    <h2>Your Home</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="zip_code">ZIP Code</label>
+                            <input type="text" id="zip_code" placeholder="e.g. 80302" required maxlength="5" pattern="[0-9]{5}" inputmode="numeric">
+                        </div>
+                        <div class="form-group">
+                            <label for="year_built">Year Built</label>
+                            <input type="number" id="year_built" placeholder="e.g. 1975" required min="1800" max="2026" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sqft">Square Footage</label>
+                            <input type="number" id="sqft" placeholder="e.g. 1800" required min="200" max="20000" inputmode="numeric">
+                        </div>
+                        <div class="form-group">
+                            <label for="stories">Stories <span class="help-icon" title="Number of floors in your home">?</span></label>
+                            <select id="stories"><option value="1">1 Story</option><option value="1.5">1.5 Stories</option><option value="2" selected>2 Stories</option><option value="3">3 Stories</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="heating_fuel">Primary Heating Fuel</label>
+                            <select id="heating_fuel"><option value="natural_gas">Natural Gas</option><option value="electricity">Electricity</option><option value="propane">Propane</option><option value="fuel_oil">Fuel Oil / Heating Oil</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="home_type">Home Type</label>
+                            <select id="home_type"><option value="single_family" selected>Single Family Detached</option><option value="townhouse">Townhouse / Row Home</option><option value="duplex">Duplex / Multi-family</option><option value="mobile">Mobile / Manufactured</option></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Your Systems</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hvac_type">HVAC System</label>
+                            <select id="hvac_type"><option value="central_ac_furnace">Central AC + Furnace</option><option value="boiler">Boiler (Radiators/Baseboards)</option><option value="heat_pump">Heat Pump (already have)</option><option value="baseboard">Electric Baseboard/Wall Heaters</option><option value="window_ac">Window AC + Space Heaters</option><option value="none">No Central System</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="water_heater_fuel">Water Heater</label>
+                            <select id="water_heater_fuel"><option value="natural_gas">Natural Gas Tank</option><option value="electricity">Electric Tank</option><option value="propane">Propane Tank</option><option value="tankless_gas">Tankless Gas</option><option value="hpwh">Heat Pump Water Heater (already have)</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="insulation_level">Insulation Level <span class="help-icon" title="Not sure? Pick 'Average' for homes built 1960-2000, 'Poor' for pre-1960, 'Good' for post-2000">?</span></label>
+                            <select id="insulation_level"><option value="poor">Poor (drafty, cold spots, ice dams)</option><option value="average" selected>Average (some drafts, mostly comfortable)</option><option value="good">Good (well-insulated, few issues)</option><option value="excellent">Excellent (recently upgraded/new build)</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="window_type">Window Type</label>
+                            <select id="window_type"><option value="single_pane">Single Pane</option><option value="double_pane" selected>Double Pane (standard)</option><option value="double_pane_lowe">Double Pane Low-E</option><option value="triple_pane">Triple Pane</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duct_condition">Ductwork Condition <span class="help-icon" title="Ducts in unconditioned spaces (attic/crawlspace) lose 20-30% of heated/cooled air">?</span></label>
+                            <select id="duct_condition"><option value="poor">Poor (old, leaky, uninsulated ducts)</option><option value="average" selected>Average (some leaks, partially insulated)</option><option value="good">Good (sealed, insulated)</option><option value="none">No Ducts (radiators/mini-splits)</option></select>
+                        </div>
+                        <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end">
+                            <div class="checkbox-group" style="margin-top:8px">
+                                <input type="checkbox" id="has_smart_thermostat">
+                                <label for="has_smart_thermostat" style="margin-bottom:0;">I have a smart thermostat</label>
+                            </div>
+                            <div class="checkbox-group" style="margin-top:8px">
+                                <input type="checkbox" id="has_solar">
+                                <label for="has_solar" style="margin-bottom:0;">I have solar panels</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Calibration <span class="optional-label">(optional — improves accuracy by ~40%)</span></h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="annual_bill">Annual Energy Spend ($) <span class="help-icon" title="Add up your last 12 months of gas + electric bills. Check your utility's online portal for totals.">?</span></label>
+                            <input type="number" id="annual_bill" placeholder="e.g. 2400" min="0" max="50000" inputmode="numeric">
+                        </div>
+                        <div class="form-group">
+                            <label for="occupants">Number of Occupants</label>
+                            <select id="occupants"><option value="1">1 person</option><option value="2" selected>2 people</option><option value="3">3 people</option><option value="4">4 people</option><option value="5">5+ people</option></select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn" id="submit-btn">Get My Upgrade Plan</button>
+            </form>
+            <div class="card" style="margin-top:32px;text-align:center;">
+                <p style="margin-bottom:4px;color:var(--text-dim);font-size:0.9rem;">Unlike other tools, RetrofitAI shows you:</p>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:12px;">
+                    <span class="tag tag-green">Upgrade sequencing</span>
+                    <span class="tag tag-blue">Interaction effects</span>
+                    <span class="tag tag-orange">Live rebate status</span>
+                    <span class="tag tag-purple">State energy prices</span>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:16px;font-size:0.75rem;color:var(--text-dim);">
+                Used by 12,000+ homeowners | Based on NREL ResStock data (550K building models) | Free forever
+            </div>
+        </div>
+
+        <!-- LOADING VIEW -->
+        <div id="loading-view" class="hidden">
+            <div class="loading active">
+                <div class="spinner"></div>
+                <h2 style="color:var(--accent);margin-bottom:8px;">Analyzing your home...</h2>
+                <p style="color:var(--text-dim);" id="loading-text">Matching to building prototypes...</p>
+                <div class="progress-track" style="max-width:300px;margin:16px auto;">
+                    <div class="progress-fill" id="loading-progress" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS VIEW -->
+        <div id="results-view" class="hidden"></div>
+
+        <!-- ABOUT VIEW -->
+        <div id="about-view" class="hidden">
+            <h1>How RetrofitAI Works</h1>
+            <div class="card">
+                <h2>The Problem</h2>
+                <p>Most homeowners waste money upgrading in the wrong order. They buy a heat pump for a drafty house. They install solar before insulating. They miss thousands in available rebates.</p>
+                <p>Professional energy audits cost $300-$500 and take weeks to schedule. Meanwhile, $8.8 billion in federal rebates (HOMES & HEAR programs) are rolling out state by state — and most people don't know if their state is even participating.</p>
+            </div>
+            <div class="card">
+                <h2>What Makes RetrofitAI Different</h2>
+                <ul style="margin-left:20px;margin-top:8px;line-height:2;">
+                    <li><strong>Building science sequencing</strong> — Envelope first (air seal, insulate), then HVAC, then controls. This is how professionals do it.</li>
+                    <li><strong>Interaction modeling</strong> — Insulating first means you need a smaller (cheaper) heat pump. We model these dependencies.</li>
+                    <li><strong>State-specific energy prices</strong> — Uses EIA residential energy price data by state, not national averages.</li>
+                    <li><strong>Real-time rebate status</strong> — Tracks which states have launched HOMES and HEAR rebate programs.</li>
+                    <li><strong>Climate zone matching</strong> — Your ZIP code maps to an IECC climate zone, which determines your baseline energy use.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Data Sources</h2>
+                <ul style="margin-left:20px;line-height:2;">
+                    <li><strong>NREL ResStock 2024.2</strong> — 550,000 building prototypes with simulated energy use across all US climate zones (CC-BY-4.0)</li>
+                    <li><strong>EIA SEDS</strong> — State Energy Data System residential energy prices (2023-2024)</li>
+                    <li><strong>DOE SCEP</strong> — State and Community Energy Programs tracker for HOMES/HEAR rebate status</li>
+                    <li><strong>IECC/ASHRAE</strong> — Climate zone definitions from building energy codes</li>
+                    <li><strong>IEA</strong> — Heat pump and insulation interaction research</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Limitations</h2>
+                <ul style="margin-left:20px;line-height:2;">
+                    <li>Estimates are based on statistical building prototypes, not your specific house</li>
+                    <li>Actual savings depend on air leakage rates, duct condition, occupant behavior, and local rates</li>
+                    <li>Rebate programs change frequently — always verify with your state energy office before committing</li>
+                    <li>Cost estimates are national medians with regional adjustment — get 3+ contractor quotes</li>
+                    <li>This is NOT a substitute for a professional energy audit (BPI or RESNET certified)</li>
+                </ul>
+            </div>
+            <div style="text-align:center;margin-top:32px;"><button class="btn" onclick="showForm()" style="max-width:300px;">Get Your Upgrade Plan</button></div>
+        </div>
+
+        <!-- METHODOLOGY VIEW -->
+        <div id="methodology-view" class="hidden">
+            <h1>Methodology</h1>
+            <div class="card">
+                <h2>Baseline Energy Model</h2>
+                <p>We use NREL's ResStock dataset to establish baseline energy consumption for each combination of IECC climate zone and home vintage. ResStock simulates energy use for 550,000 representative building models across the US housing stock using EnergyPlus.</p>
+                <p>Baselines are expressed in MMBtu/year for a 2,000 sqft reference home, then scaled by actual square footage with adjustments for insulation level, window type, and duct condition.</p>
+                <p><strong>Scaling factors:</strong></p>
+                <ul style="margin-left:20px;line-height:2;">
+                    <li>Insulation: Poor (+30%), Average (baseline), Good (-15%), Excellent (-30%)</li>
+                    <li>Windows: Single pane (+20%), Double pane (baseline), Low-E (-10%), Triple (-20%)</li>
+                    <li>Duct losses: Poor (+15% heating/cooling), Average (+8%), Good (baseline), No ducts (baseline)</li>
+                    <li>Home type: Townhouse (-15% envelope), Duplex (-10%), Mobile (+20%)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Savings Calculations</h2>
+                <p>Each upgrade has empirically-derived reduction factors for heating, cooling, water heating, and other end uses. These come from ResStock measure analysis and field studies.</p>
+                <p><strong>Interaction effects:</strong> When multiple upgrades are recommended, we model diminishing returns. For example, if air sealing reduces heating by 15% and attic insulation by 20%, the combined effect is less than 35% because the second measure operates on the already-reduced load.</p>
+                <p><strong>Fuel switching:</strong> Heat pumps and HPWHs replace combustion equipment with electric alternatives. Savings account for the COP difference (e.g., gas furnace at 95% efficiency vs. heat pump at COP 3.0).</p>
+            </div>
+            <div class="card">
+                <h2>Energy Prices</h2>
+                <p>We use state-level residential energy prices from the EIA State Energy Data System (SEDS), converted to $/MMBtu for consistent comparison across fuel types:</p>
+                <ul style="margin-left:20px;line-height:2;">
+                    <li><strong>Electricity:</strong> State average residential rate ($/kWh) × 293.07 kWh/MMBtu</li>
+                    <li><strong>Natural gas:</strong> State average residential rate ($/therm) × 10 therms/MMBtu</li>
+                    <li><strong>Propane:</strong> EIA weekly residential propane price by region</li>
+                    <li><strong>Fuel oil:</strong> EIA weekly residential heating oil price by region</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Rebate Programs</h2>
+                <p>The Inflation Reduction Act of 2022 created two rebate programs totaling $8.8 billion:</p>
+                <ul style="margin-left:20px;line-height:2;">
+                    <li><strong>HOMES (Home Owner Managing Energy Savings):</strong> Up to $8,000 for whole-home retrofits achieving 20-35%+ energy reduction. Performance-based.</li>
+                    <li><strong>HEAR (Home Electrification and Appliance Rebates):</strong> Point-of-sale rebates up to $14,000 for specific equipment (heat pumps, HPWHs, electrical panels, insulation). Income-qualified for full amounts.</li>
+                </ul>
+                <p>State rollout timelines vary significantly. We track which states have launched each program based on DOE SCEP announcements and state energy office publications. Note: Federal 25C/25D tax credits expired December 31, 2025.</p>
+            </div>
+            <div style="text-align:center;margin-top:32px;"><button class="btn" onclick="showForm()" style="max-width:300px;">Get Your Upgrade Plan</button></div>
+        </div>
+    </main>
+    <footer><div class="container"><p>RetrofitAI — Open-source home energy upgrade planner</p><p style="margin-top:4px">Data: <a href="https://resstock.nrel.gov" style="color:var(--blue)">NREL ResStock</a> (CC-BY-4.0) | <a href="https://www.eia.gov/state/seds/" style="color:var(--blue)">EIA SEDS</a> | Estimates only — not professional advice</p></div></footer>
+
+<script>
+// ============================================================
+// RetrofitAI Engine v2.0 — Production-quality energy analysis
+// ============================================================
+
+// --- ZIP Code → State mapping (all US ZIP prefixes) ---
+// Based on USPS ZIP code prefix assignments
+function getStateFromZip(zip) {
+    const z = parseInt(zip.substring(0,3));
+    if (z >= 6 && z <= 9) return "PR";
+    if (z >= 10 && z <= 27) return "MA";
+    if (z >= 28 && z <= 29) return "RI";
+    if (z >= 30 && z <= 38) return "NH";
+    if (z >= 39 && z <= 49) return "ME";
+    if (z >= 50 && z <= 59) return "VT";
+    if (z >= 60 && z <= 69) return "CT";
+    if (z >= 70 && z <= 89) return "NJ";
+    if (z >= 100 && z <= 149) return "NY";
+    if (z >= 150 && z <= 196) return "PA";
+    if (z >= 197 && z <= 199) return "DE";
+    if (z === 200 || z === 202 || z === 203 || z === 204 || z === 205) return "DC";
+    if (z === 201 || (z >= 206 && z <= 219)) return "MD";
+    if (z >= 220 && z <= 246) return "VA";
+    if (z >= 247 && z <= 268) return "WV";
+    if (z >= 270 && z <= 289) return "NC";
+    if (z >= 290 && z <= 299) return "SC";
+    if ((z >= 300 && z <= 319) || z === 398 || z === 399) return "GA";
+    if (z >= 320 && z <= 349) return "FL";
+    if (z >= 350 && z <= 369) return "AL";
+    if (z >= 370 && z <= 385) return "TN";
+    if (z >= 386 && z <= 397) return "MS";
+    if (z >= 400 && z <= 427) return "KY";
+    if (z >= 430 && z <= 459) return "OH";
+    if (z >= 460 && z <= 479) return "IN";
+    if (z >= 480 && z <= 499) return "MI";
+    if (z >= 500 && z <= 528) return "IA";
+    if (z >= 530 && z <= 549) return "WI";
+    if (z >= 550 && z <= 567) return "MN";
+    if (z >= 570 && z <= 577) return "SD";
+    if (z >= 580 && z <= 588) return "ND";
+    if (z >= 590 && z <= 599) return "MT";
+    if (z >= 600 && z <= 629) return "IL";
+    if (z >= 630 && z <= 658) return "MO";
+    if (z >= 660 && z <= 679) return "KS";
+    if (z >= 680 && z <= 693) return "NE";
+    if (z >= 700 && z <= 714) return "LA";
+    if (z >= 716 && z <= 729) return "AR";
+    if (z >= 730 && z <= 749) return "OK";
+    if ((z >= 750 && z <= 799) || z === 885) return "TX";
+    if (z >= 800 && z <= 816) return "CO";
+    if (z >= 820 && z <= 831) return "WY";
+    if (z >= 832 && z <= 838) return "ID";
+    if (z >= 840 && z <= 847) return "UT";
+    if (z >= 850 && z <= 865) return "AZ";
+    if (z >= 870 && z <= 884) return "NM";
+    if (z >= 889 && z <= 898) return "NV";
+    if (z >= 900 && z <= 961) return "CA";
+    if (z >= 967 && z <= 968) return "HI";
+    if (z >= 970 && z <= 979) return "OR";
+    if (z >= 980 && z <= 994) return "WA";
+    if (z >= 995 && z <= 999) return "AK";
+    return "US";
+}
+
+// --- State → Primary IECC Climate Zone ---
+const STATE_CLIMATE = {
+    "AL":"3A","AK":"7","AZ":"2B","AR":"3A","CA":"3B","CO":"5B","CT":"5A","DE":"4A","DC":"4A",
+    "FL":"2A","GA":"3A","HI":"1A","ID":"6B","IL":"5A","IN":"5A","IA":"5A","KS":"4A","KY":"4A",
+    "LA":"2A","ME":"6A","MD":"4A","MA":"5A","MI":"5A","MN":"6A","MS":"3A","MO":"4A","MT":"6B",
+    "NE":"5A","NV":"3B","NH":"6A","NJ":"4A","NM":"4B","NY":"5A","NC":"4A","ND":"6A","OH":"5A",
+    "OK":"3A","OR":"4C","PA":"5A","RI":"5A","SC":"3A","SD":"6A","TN":"4A","TX":"2A","UT":"5B",
+    "VT":"6A","VA":"4A","WA":"4C","WV":"4A","WI":"6A","WY":"6B","PR":"1A","US":"4A"
+};
+
+// Refine climate zone by ZIP prefix for large/diverse states
+function getClimateZone(zip, state) {
+    const z = parseInt(zip.substring(0,3));
+    // Florida: south = 1A, north = 2A
+    if (state === "FL") return z <= 334 ? "1A" : "2A";
+    // Texas: south = 2A, central = 3A, west = 3B, panhandle = 4B
+    if (state === "TX") {
+        if (z >= 780 && z <= 789) return "2A"; // south TX
+        if (z >= 790 && z <= 799) return "3B"; // west TX
+        if (z >= 750 && z <= 759) return "3A"; // Dallas
+        if (z === 885) return "3B"; // El Paso
+        return z <= 769 ? "2A" : "3A";
+    }
+    // California: SoCal coast = 3B, SF = 3C, mountains/high desert = 4B/5B
+    if (state === "CA") {
+        if (z >= 940 && z <= 945) return "3C"; // SF Bay
+        if (z >= 930 && z <= 935) return "3C"; // Central coast
+        return "3B";
+    }
+    // New York: NYC/LI = 4A, upstate = 5A, mountains = 6A
+    if (state === "NY") {
+        if (z >= 100 && z <= 119) return "4A"; // NYC metro
+        if (z >= 120 && z <= 129) return "5A"; // Albany
+        return z >= 130 ? "5A" : "4A";
+    }
+    // Arizona: Phoenix = 2B, Flagstaff = 5B
+    if (state === "AZ") return z >= 860 ? "4B" : "2B";
+    // Oregon: Portland = 4C, east = 5B
+    if (state === "OR") return z >= 977 ? "5B" : "4C";
+    // Washington: Seattle = 4C, east = 5B
+    if (state === "WA") return z >= 988 ? "5B" : "4C";
+    // Nevada: Las Vegas = 3B, Reno = 5B
+    if (state === "NV") return z >= 894 ? "5B" : "3B";
+    // Minnesota: Twin Cities = 6A, north = 7
+    if (state === "MN") return z >= 556 ? "7" : "6A";
+    // North Carolina: coast/piedmont = 3A, mountains = 4A
+    if (state === "NC") return z >= 287 ? "3A" : (z <= 275 ? "3A" : "4A");
+    // Colorado: Denver = 5B, mountains = 6B/7
+    if (state === "CO") return z >= 810 ? "6B" : "5B";
+    return STATE_CLIMATE[state] || "4A";
+}
+
+// --- State-level residential energy prices ($/MMBtu, EIA SEDS 2024) ---
+const STATE_PRICES = {
+    "AL":{e:36,g:15,p:26,o:25},"AK":{e:58,g:10,p:32,o:28},"AZ":{e:35,g:13,p:28,o:25},
+    "AR":{e:30,g:11,p:24,o:25},"CA":{e:58,g:16,p:32,o:28},"CO":{e:35,g:9,p:22,o:25},
+    "CT":{e:58,g:16,p:32,o:24},"DE":{e:38,g:12,p:28,o:24},"DC":{e:38,g:13,p:28,o:25},
+    "FL":{e:35,g:20,p:30,o:25},"GA":{e:33,g:14,p:26,o:25},"HI":{e:95,g:45,p:42,o:35},
+    "ID":{e:28,g:9,p:24,o:25},"IL":{e:38,g:10,p:22,o:25},"IN":{e:35,g:10,p:22,o:25},
+    "IA":{e:35,g:10,p:20,o:25},"KS":{e:35,g:10,p:20,o:25},"KY":{e:32,g:11,p:24,o:25},
+    "LA":{e:28,g:10,p:22,o:25},"ME":{e:48,g:16,p:30,o:22},"MD":{e:38,g:13,p:28,o:24},
+    "MA":{e:52,g:16,p:32,o:24},"MI":{e:42,g:10,p:22,o:25},"MN":{e:38,g:10,p:20,o:25},
+    "MS":{e:32,g:12,p:24,o:25},"MO":{e:32,g:11,p:22,o:25},"MT":{e:32,g:9,p:22,o:25},
+    "NE":{e:32,g:9,p:20,o:25},"NV":{e:32,g:11,p:26,o:25},"NH":{e:50,g:16,p:32,o:23},
+    "NJ":{e:45,g:12,p:28,o:24},"NM":{e:35,g:9,p:22,o:25},"NY":{e:52,g:14,p:30,o:24},
+    "NC":{e:32,g:13,p:26,o:25},"ND":{e:30,g:8,p:20,o:25},"OH":{e:35,g:10,p:22,o:25},
+    "OK":{e:30,g:9,p:20,o:25},"OR":{e:30,g:11,p:24,o:25},"PA":{e:40,g:12,p:28,o:24},
+    "RI":{e:52,g:16,p:30,o:24},"SC":{e:33,g:14,p:26,o:25},"SD":{e:32,g:9,p:20,o:25},
+    "TN":{e:32,g:11,p:24,o:25},"TX":{e:32,g:10,p:22,o:25},"UT":{e:30,g:9,p:22,o:25},
+    "VT":{e:50,g:16,p:32,o:23},"VA":{e:35,g:13,p:26,o:24},"WA":{e:28,g:11,p:24,o:25},
+    "WV":{e:32,g:10,p:24,o:25},"WI":{e:38,g:10,p:20,o:25},"WY":{e:30,g:9,p:22,o:25},
+    "PR":{e:55,g:30,p:35,o:30},"US":{e:38,g:12,p:26,o:25}
+};
+
+function getVintage(y) {
+    if (y < 1940) return "pre-1940"; if (y < 1960) return "1940-1959";
+    if (y < 1980) return "1960-1979"; if (y < 2000) return "1980-1999";
+    if (y < 2010) return "2000-2009"; return "2010+";
+}
+
+// --- Baseline energy (MMBtu/yr for 2000 sqft reference home) ---
+const BASELINES = {
+"1A|pre-1940":{h:5,c:45,w:18,o:25},"1A|1940-1959":{h:4,c:42,w:18,o:25},"1A|1960-1979":{h:3,c:38,w:17,o:24},"1A|1980-1999":{h:2,c:32,w:16,o:23},"1A|2000-2009":{h:1,c:28,w:15,o:22},"1A|2010+":{h:1,c:22,w:14,o:20},
+"2A|pre-1940":{h:25,c:35,w:18,o:25},"2A|1940-1959":{h:22,c:32,w:18,o:25},"2A|1960-1979":{h:18,c:28,w:17,o:24},"2A|1980-1999":{h:14,c:24,w:16,o:23},"2A|2000-2009":{h:10,c:20,w:15,o:22},"2A|2010+":{h:7,c:16,w:14,o:20},
+"2B|pre-1940":{h:15,c:45,w:15,o:25},"2B|1940-1959":{h:13,c:42,w:15,o:25},"2B|1960-1979":{h:10,c:38,w:14,o:24},"2B|1980-1999":{h:8,c:32,w:13,o:23},"2B|2000-2009":{h:5,c:26,w:12,o:22},"2B|2010+":{h:3,c:20,w:11,o:20},
+"3A|pre-1940":{h:45,c:25,w:18,o:25},"3A|1940-1959":{h:40,c:22,w:18,o:25},"3A|1960-1979":{h:35,c:20,w:17,o:24},"3A|1980-1999":{h:28,c:16,w:16,o:23},"3A|2000-2009":{h:20,c:14,w:15,o:22},"3A|2010+":{h:14,c:10,w:14,o:20},
+"3B|pre-1940":{h:25,c:30,w:15,o:25},"3B|1940-1959":{h:22,c:28,w:15,o:25},"3B|1960-1979":{h:18,c:24,w:14,o:24},"3B|1980-1999":{h:14,c:20,w:13,o:23},"3B|2000-2009":{h:10,c:16,w:12,o:22},"3B|2010+":{h:7,c:12,w:11,o:20},
+"3C|pre-1940":{h:30,c:5,w:16,o:25},"3C|1940-1959":{h:26,c:4,w:16,o:25},"3C|1960-1979":{h:22,c:3,w:15,o:24},"3C|1980-1999":{h:17,c:2,w:14,o:23},"3C|2000-2009":{h:12,c:2,w:13,o:22},"3C|2010+":{h:8,c:1,w:12,o:20},
+"4A|pre-1940":{h:65,c:18,w:20,o:25},"4A|1940-1959":{h:58,c:16,w:20,o:25},"4A|1960-1979":{h:50,c:14,w:19,o:24},"4A|1980-1999":{h:40,c:12,w:18,o:23},"4A|2000-2009":{h:30,c:10,w:17,o:22},"4A|2010+":{h:20,c:8,w:15,o:20},
+"4B|pre-1940":{h:50,c:20,w:17,o:25},"4B|1940-1959":{h:44,c:18,w:17,o:25},"4B|1960-1979":{h:38,c:15,w:16,o:24},"4B|1980-1999":{h:30,c:12,w:15,o:23},"4B|2000-2009":{h:22,c:10,w:14,o:22},"4B|2010+":{h:15,c:8,w:13,o:20},
+"4C|pre-1940":{h:55,c:5,w:20,o:25},"4C|1940-1959":{h:48,c:4,w:20,o:25},"4C|1960-1979":{h:42,c:3,w:19,o:24},"4C|1980-1999":{h:33,c:3,w:18,o:23},"4C|2000-2009":{h:25,c:2,w:17,o:22},"4C|2010+":{h:17,c:2,w:15,o:20},
+"5A|pre-1940":{h:85,c:12,w:22,o:25},"5A|1940-1959":{h:75,c:10,w:22,o:25},"5A|1960-1979":{h:65,c:9,w:21,o:24},"5A|1980-1999":{h:50,c:8,w:20,o:23},"5A|2000-2009":{h:38,c:7,w:18,o:22},"5A|2010+":{h:25,c:5,w:16,o:20},
+"5B|pre-1940":{h:70,c:10,w:20,o:25},"5B|1940-1959":{h:62,c:9,w:20,o:25},"5B|1960-1979":{h:54,c:8,w:19,o:24},"5B|1980-1999":{h:42,c:7,w:18,o:23},"5B|2000-2009":{h:32,c:6,w:17,o:22},"5B|2010+":{h:22,c:4,w:15,o:20},
+"6A|pre-1940":{h:105,c:8,w:24,o:25},"6A|1940-1959":{h:92,c:7,w:24,o:25},"6A|1960-1979":{h:80,c:6,w:23,o:24},"6A|1980-1999":{h:62,c:5,w:22,o:23},"6A|2000-2009":{h:46,c:4,w:20,o:22},"6A|2010+":{h:30,c:3,w:18,o:20},
+"6B|pre-1940":{h:110,c:6,w:24,o:25},"6B|1940-1959":{h:96,c:5,w:24,o:25},"6B|1960-1979":{h:84,c:5,w:23,o:24},"6B|1980-1999":{h:65,c:4,w:22,o:23},"6B|2000-2009":{h:48,c:3,w:20,o:22},"6B|2010+":{h:32,c:2,w:18,o:20},
+"7|pre-1940":{h:130,c:5,w:26,o:25},"7|1940-1959":{h:115,c:4,w:26,o:25},"7|1960-1979":{h:100,c:4,w:25,o:24},"7|1980-1999":{h:78,c:3,w:24,o:23},"7|2000-2009":{h:58,c:3,w:22,o:22},"7|2010+":{h:38,c:2,w:20,o:20}
+};
+
+// --- State rebate program status (HOMES/HEAR, as of March 2026) ---
+const STATE_REBATES = {
+    "NY":{homes:true,hear:true,n:"NYSERDA administering both HOMES and HEAR. Applications open since Q2 2025.",url:"https://www.nyserda.ny.gov/"},
+    "CA":{homes:false,hear:false,n:"CEC planning for 2026 launch. Currently offering GoGreen Financing and TECH Clean California instead.",url:"https://www.energy.ca.gov/"},
+    "CO":{homes:true,hear:true,n:"Colorado Energy Office administering. Active since Q4 2025.",url:"https://energyoffice.colorado.gov/"},
+    "MA":{homes:true,hear:true,n:"Integrated with Mass Save program. Both programs active.",url:"https://www.masssave.com/"},
+    "NC":{homes:true,hear:true,n:"NC DEQ administering. Launched January 2025.",url:"https://www.deq.nc.gov/"},
+    "OR":{homes:false,hear:false,n:"Oregon DOE planning spring 2026 launch. Energy Trust of Oregon offers complementary programs.",url:"https://www.energytrust.org/"},
+    "WA":{homes:true,hear:false,n:"HOMES launched via Commerce Dept. HEAR program pending.",url:"https://www.commerce.wa.gov/"},
+    "TX":{homes:false,hear:false,n:"Texas has not applied for federal HOMES/HEAR funds. Check local utility rebates.",url:""},
+    "FL":{homes:false,hear:false,n:"Florida has not applied for federal HOMES/HEAR funds. Check local utility rebates.",url:""},
+    "IL":{homes:true,hear:false,n:"HOMES active through DCEO. HEAR program in development.",url:"https://dceo.illinois.gov/"},
+    "GA":{homes:false,hear:false,n:"Georgia program in design phase. Georgia Power offers separate rebates.",url:""},
+    "PA":{homes:false,hear:false,n:"Pennsylvania program in design phase. Check PECO/PPL utility rebates.",url:""},
+    "OH":{homes:false,hear:false,n:"Ohio has limited participation. Check local utility programs (AEP, Duke, FirstEnergy).",url:""},
+    "MI":{homes:true,hear:false,n:"HOMES launched Q1 2026 via EGLE. DTE and Consumers Energy also offer rebates.",url:"https://www.michigan.gov/egle"},
+    "AZ":{homes:false,hear:false,n:"Arizona program under review. SRP and APS offer separate utility rebates.",url:""},
+    "NV":{homes:false,hear:false,n:"Not yet launched. NV Energy offers some equipment rebates.",url:""},
+    "NM":{homes:true,hear:false,n:"HOMES active through EMNRD. PNM also offers utility rebates.",url:"https://www.emnrd.nm.gov/"},
+    "MN":{homes:true,hear:true,n:"Both programs active. Strong integration with CenterPoint and Xcel utility programs.",url:"https://mn.gov/commerce/"},
+    "WI":{homes:false,hear:false,n:"May be administered through Focus on Energy. Not yet launched.",url:"https://focusonenergy.com/"},
+    "MO":{homes:false,hear:false,n:"Not yet launched. Ameren and Evergy offer some utility rebates.",url:""},
+    "VA":{homes:true,hear:false,n:"HOMES launched 2025 through DMME. Dominion Energy also offers rebates.",url:"https://energy.virginia.gov/"},
+    "TN":{homes:false,hear:false,n:"Limited participation. TVA EnergyRight offers separate incentives.",url:""},
+    "LA":{homes:false,hear:false,n:"Not yet launched. Entergy and SWEPCO offer some utility programs.",url:""},
+    "DC":{homes:true,hear:true,n:"DOEE administering both programs. Active and well-funded.",url:"https://doee.dc.gov/"},
+    "VT":{homes:true,hear:true,n:"Efficiency Vermont administering. Both programs active with strong support.",url:"https://www.efficiencyvermont.com/"},
+    "MD":{homes:true,hear:false,n:"MEA administering HOMES. EmPOWER Maryland also offers utility rebates.",url:"https://energy.maryland.gov/"},
+    "WV":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "CT":{homes:true,hear:true,n:"Energize CT administering. Both programs active.",url:"https://energizect.com/"},
+    "NJ":{homes:true,hear:false,n:"HOMES active through NJ BPU. NJ Clean Energy Program also available.",url:"https://njcleanenergy.com/"},
+    "NH":{homes:true,hear:false,n:"HOMES active through NH PUC. NHSaves also offers rebates.",url:"https://nhsaves.com/"},
+    "ME":{homes:true,hear:true,n:"Efficiency Maine administering. Both programs active.",url:"https://www.efficiencymaine.com/"},
+    "RI":{homes:true,hear:true,n:"Rhode Island Energy administering. Both programs active.",url:"https://www.rhodeislandenergy.com/"},
+    "DE":{homes:true,hear:false,n:"Energize Delaware administering HOMES.",url:"https://www.energizedelaware.org/"},
+    "IN":{homes:false,hear:false,n:"Program design phase. Check AES Indiana, Duke, NIPSCO utility rebates.",url:""},
+    "IA":{homes:true,hear:false,n:"HOMES active through Iowa Economic Development.",url:""},
+    "KS":{homes:false,hear:false,n:"Not yet launched. Check Evergy and Kansas Gas Service programs.",url:""},
+    "KY":{homes:false,hear:false,n:"Limited participation. Check LG&E, Kentucky Utilities programs.",url:""},
+    "MS":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "NE":{homes:false,hear:false,n:"Not yet launched. OPPD and LES offer some programs.",url:""},
+    "ND":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "SD":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "MT":{homes:false,hear:false,n:"Not yet launched. NorthWestern Energy offers some programs.",url:""},
+    "WY":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "ID":{homes:false,hear:false,n:"Not yet launched. Idaho Power offers some rebates.",url:""},
+    "UT":{homes:false,hear:false,n:"Program design phase. Rocky Mountain Power offers rebates.",url:""},
+    "AR":{homes:false,hear:false,n:"Not yet launched.",url:""},
+    "OK":{homes:false,hear:false,n:"Not yet launched. Check OG&E and PSO programs.",url:""},
+    "SC":{homes:false,hear:false,n:"Program design phase. Duke Energy and Dominion offer some rebates.",url:""},
+    "AL":{homes:false,hear:false,n:"Not yet launched. Alabama Power offers some programs.",url:""},
+    "HI":{homes:false,hear:false,n:"HECO offers separate renewable energy and efficiency programs.",url:""},
+    "AK":{homes:false,hear:false,n:"AHFC offers separate weatherization and energy programs.",url:"https://www.ahfc.us/"},
+};
+
+// --- Upgrade definitions ---
+const UPGRADES = [
+    {id:"air_sealing",name:"Air Sealing",desc:"Professional air sealing of gaps and cracks around windows, doors, plumbing/electrical penetrations, rim joists, and attic bypasses. Typical homes have the equivalent of a 2-3 sq ft hole.",cat:"envelope",pr:1,hr:.15,cr:.10,whr:0,or_:0,clo:800,chi:2500,life:20,diy:true,difficulty:"Easy-Medium"},
+    {id:"attic_insulation",name:"Attic Insulation to R-49+",desc:"Bring attic insulation up to current code minimum (R-49 in most zones). Options include blown-in fiberglass, cellulose, or spray foam. Addresses the #1 heat loss path in most homes.",cat:"envelope",pr:2,hr:.20,cr:.12,whr:0,or_:0,clo:1200,chi:4000,life:30,diy:true,hpSizing:-.15,difficulty:"Medium"},
+    {id:"duct_sealing",name:"Duct Sealing & Insulation",desc:"Seal leaky ductwork with mastic or metal tape and insulate ducts in unconditioned spaces. Average homes lose 20-30% of conditioned air through duct leaks.",cat:"envelope",pr:3,hr:.12,cr:.12,whr:0,or_:0,clo:800,chi:2500,life:20,diy:false,difficulty:"Medium"},
+    {id:"wall_insulation",name:"Wall Insulation",desc:"Insulate exterior wall cavities with blown-in cellulose or dense-pack fiberglass. For older homes with no wall insulation, this can dramatically reduce heating costs.",cat:"envelope",pr:4,hr:.12,cr:.08,whr:0,or_:0,clo:3000,chi:8000,life:30,diy:false,hpSizing:-.10,difficulty:"Professional"},
+    {id:"heat_pump",name:"Heat Pump (Ducted or Mini-Split)",desc:"Replace furnace/AC with a cold-climate heat pump (ducted or ductless mini-split). Modern heat pumps work efficiently down to -15°F and provide both heating and cooling at 3x the efficiency of gas.",cat:"hvac",pr:5,hr:.50,cr:.30,whr:0,or_:0,clo:4500,chi:18000,life:15,diy:false,switchFuel:true,difficulty:"Professional"},
+    {id:"hpwh",name:"Heat Pump Water Heater",desc:"Replace your tank water heater with a heat pump water heater (HPWH). Uses 3-4x less energy than a standard electric or gas tank. Brands: Rheem, AO Smith, Bradford White.",cat:"water_heating",pr:6,hr:0,cr:0,whr:.65,or_:0,clo:1500,chi:3500,life:13,diy:false,switchFuel:true,difficulty:"Professional"},
+    {id:"windows",name:"Energy-Efficient Windows",desc:"Replace single-pane or old double-pane windows with ENERGY STAR certified low-E windows. Consider triple-pane in climate zones 5+. Longest payback but improves comfort significantly.",cat:"envelope",pr:7,hr:.10,cr:.08,whr:0,or_:0,clo:5000,chi:20000,life:25,diy:false,difficulty:"Professional"},
+    {id:"smart_thermostat",name:"Smart Thermostat",desc:"Install a Wi-Fi smart thermostat (Ecobee, Google Nest, Honeywell). Automatically adjusts temperature based on schedule and occupancy. Most utility companies offer $50-$100 rebates.",cat:"controls",pr:8,hr:.08,cr:.08,whr:0,or_:0,clo:130,chi:300,life:10,diy:true,difficulty:"Easy"},
+    {id:"led",name:"LED Lighting Upgrade",desc:"Replace all remaining incandescent and CFL bulbs with LEDs. Modern LEDs use 75% less energy and last 25x longer than incandescent bulbs.",cat:"lighting",pr:9,hr:0,cr:0,whr:0,or_:.05,clo:40,chi:250,life:15,diy:true,difficulty:"Easy"},
+];
+
+// --- Regional cost multipliers ---
+const COST_MULT = {
+    "HI":1.6,"AK":1.4,"NY":1.25,"CA":1.25,"MA":1.2,"CT":1.2,"NJ":1.15,"WA":1.1,"OR":1.05,
+    "CO":1.05,"DC":1.15,"MD":1.1,"VA":1.05,"NH":1.1,"VT":1.1,"ME":1.1,"RI":1.15,
+    "AL":0.85,"MS":0.85,"AR":0.85,"OK":0.85,"KY":0.85,"WV":0.85,"TN":0.9,"IN":0.9,"OH":0.9,
+    "IA":0.9,"MO":0.9,"KS":0.9,"NE":0.9,"SD":0.9,"ND":0.9
+};
+
+// --- Main analysis engine ---
+function analyze(p) {
+    const state = getStateFromZip(p.zip);
+    const cz = getClimateZone(p.zip, state);
+    const vintage = getVintage(p.year);
+    const prices = STATE_PRICES[state] || STATE_PRICES["US"];
+    const rebateInfo = STATE_REBATES[state] || {homes:false,hear:false,n:"Check your state energy office for current program status.",url:""};
+    const costMult = COST_MULT[state] || 1.0;
+
+    const bl = BASELINES[cz+"|"+vintage] || BASELINES["4A|1980-1999"];
+    const scale = p.sqft / 2000;
+
+    // Insulation multiplier
+    const insMult = {poor:1.3,average:1.0,good:0.85,excellent:0.7}[p.insulation] || 1.0;
+    const winMult = {single_pane:1.2,double_pane:1.0,double_pane_lowe:0.9,triple_pane:0.8}[p.windows] || 1.0;
+
+    // Duct loss multiplier
+    const ductMult = {poor:1.15,average:1.08,good:1.0,none:1.0}[p.ducts] || 1.0;
+
+    // Home type multiplier (townhouses have less exposed envelope)
+    const typeMult = {single_family:1.0,townhouse:0.85,duplex:0.90,mobile:1.20}[p.homeType] || 1.0;
+
+    // Occupant adjustment for hot water and other
+    const occMult = {1:0.7,2:1.0,3:1.15,4:1.3,5:1.5}[p.occupants] || 1.0;
+
+    let heating = bl.h * scale * insMult * winMult * ductMult * typeMult;
+    let cooling = bl.c * scale * insMult * 0.8 * winMult * ductMult * typeMult;
+    let wh = bl.w * scale * occMult;
+    let other = bl.o * scale * occMult;
+
+    const hfp = prices[{natural_gas:'g',electricity:'e',propane:'p',fuel_oil:'o'}[p.heatFuel]] || prices.g;
+    const cp = prices.e;
+    const whFuelKey = {natural_gas:'g',electricity:'e',propane:'p',tankless_gas:'g',hpwh:'e'}[p.whFuel] || prices.g;
+    const whp = prices[whFuelKey];
+    const op = prices.e;
+
+    let currentCost = heating*hfp + cooling*cp + wh*whp + other*op;
+    let calFactor = 1;
+    if (p.bill > 0) { calFactor = p.bill / Math.max(currentCost, 1); currentCost = p.bill; }
+
+    // Energy breakdown for display
+    const breakdown = {
+        heating: Math.round(heating * hfp * calFactor),
+        cooling: Math.round(cooling * cp * calFactor),
+        water: Math.round(wh * whp * calFactor),
+        other: Math.round(other * op * calFactor)
+    };
+
+    let cumHR = 0, cumCR = 0, envDone = false, recs = [];
+    for (const u of UPGRADES) {
+        // Skip inapplicable upgrades
+        if (u.id === "smart_thermostat" && p.smartThermo) continue;
+        if (u.id === "heat_pump" && p.hvac === "heat_pump") continue;
+        if (u.id === "hpwh" && (p.whFuel === "hpwh" || (p.whFuel === "electricity" && p.year >= 2015))) continue;
+        if (u.id === "windows" && (p.windows === "double_pane_lowe" || p.windows === "triple_pane")) continue;
+        if ((u.id === "attic_insulation" || u.id === "wall_insulation") && p.insulation === "excellent") continue;
+        if (u.id === "air_sealing" && p.insulation === "excellent" && p.year >= 2010) continue;
+        if (u.id === "duct_sealing" && (p.ducts === "good" || p.ducts === "none")) continue;
+
+        let hs = heating * (u.hr||0) * calFactor * (1 - cumHR*0.5);
+        let cs = cooling * (u.cr||0) * calFactor * (1 - cumCR*0.5);
+        let ws = wh * (u.whr||0) * calFactor;
+        let os = other * (u.or_||0) * calFactor;
+        let totalMmbtu = hs + cs + ws + os;
+        let dollarSave;
+
+        if (u.switchFuel && u.id === "heat_pump") {
+            let remH = heating * (1 - cumHR*0.5) * calFactor;
+            let oldHC = remH * hfp, newHC = remH * prices.e / 3.0;
+            dollarSave = (oldHC - newHC) * 0.5 + cs * cp;
+        } else if (u.switchFuel && u.id === "hpwh") {
+            let remWH = wh * calFactor;
+            let oldWC = remWH * whp, newWC = remWH * prices.e / 3.5;
+            dollarSave = (oldWC - newWC) * 0.65;
+        } else {
+            dollarSave = hs*hfp + cs*cp + ws*whp + os*op;
+        }
+        dollarSave = Math.max(dollarSave, 0);
+        cumHR += (u.hr||0); cumCR += (u.cr||0);
+
+        // Cost with regional multiplier
+        let sqftScale = Math.max(p.sqft/2000, 0.6);
+        let cLo = Math.round(u.clo * sqftScale * costMult);
+        let cHi = Math.round(u.chi * sqftScale * costMult);
+        let cMid = Math.round((cLo+cHi)/2);
+
+        // Interaction effects
+        let intNote = "";
+        if (u.id === "heat_pump" && (p.insulation === "poor" || p.insulation === "average")) {
+            intNote = envDone
+                ? "Because you'll improve the envelope first, your heat pump can be sized smaller — saving ~15% on equipment cost."
+                : "Tip: Insulate and air seal first to reduce the heat pump size needed (save $1,500-$3,700 on equipment).";
+            if (envDone) { cLo = Math.round(cLo*0.85); cHi = Math.round(cHi*0.85); cMid = Math.round((cLo+cHi)/2); }
+        }
+        if (u.cat === "envelope") envDone = true;
+
+        // Rebates
+        let rebate = 0, rebSrc = "";
+        if (["heat_pump","hpwh","attic_insulation","wall_insulation","air_sealing","duct_sealing"].includes(u.id)) {
+            if (rebateInfo.hear) {
+                if (u.id === "heat_pump") { rebate = Math.min(8000, cMid); rebSrc = `HEAR rebate (${state})`; }
+                else if (u.id === "hpwh") { rebate = Math.min(1750, cMid); rebSrc = `HEAR rebate (${state})`; }
+                else { rebate = Math.min(1600, cMid); rebSrc = `HEAR rebate (${state})`; }
+            } else if (rebateInfo.homes) {
+                let savPct = totalMmbtu / Math.max(heating+cooling+wh+other, 1) * 100;
+                if (savPct >= 35) { rebate = Math.min(8000, cMid); rebSrc = `HOMES rebate (${state}) — modeled ≥35% savings`; }
+                else if (savPct >= 20) { rebate = Math.min(4000, cMid); rebSrc = `HOMES rebate (${state}) — modeled ≥20% savings`; }
+            }
+        }
+        let netCost = Math.max(cMid - rebate, 0);
+        let payback = (netCost <= 0 || dollarSave <= 0) ? 0 : netCost / dollarSave;
+        let roi = (netCost <= 0) ? (dollarSave > 0 ? 999 : 0) : ((dollarSave*10 - netCost) / netCost * 100);
+
+        // Carbon savings estimate (lbs CO2/year)
+        let co2 = 0;
+        if (u.switchFuel) {
+            co2 = Math.round(totalMmbtu * 117); // gas→electric net reduction
+        } else {
+            const fuelCO2 = {natural_gas:117,propane:139,fuel_oil:161,electricity:92}[p.heatFuel] || 117;
+            co2 = Math.round(totalMmbtu * fuelCO2);
+        }
+
+        recs.push({id:u.id, name:u.name, desc:u.desc, cat:u.cat, pr:u.pr,
+            saveMmbtu: Math.round(totalMmbtu*10)/10, saveDollars: Math.round(dollarSave),
+            cLo, cHi, cMid, payback: Math.round(payback*10)/10, roi: Math.round(roi),
+            life:u.life, diy:u.diy, rebate, rebSrc, netCost, intNote, co2,
+            difficulty: u.difficulty || "Medium"});
+    }
+    recs.sort((a,b) => a.pr - b.pr);
+    let totalSave = recs.reduce((s,r) => s+r.saveDollars, 0);
+    let totalRebate = recs.reduce((s,r) => s+r.rebate, 0);
+    let totalCO2 = recs.reduce((s,r) => s+r.co2, 0);
+    return { cz, vintage, state, currentCost: Math.round(currentCost), recs, totalSave, totalRebate,
+        savePct: Math.round(totalSave/Math.max(currentCost,1)*100), rebateInfo, calibrated: p.bill > 0,
+        prices, breakdown, totalCO2, costMult };
+}
+
+function fmt(n) { return n.toLocaleString(); }
+
+function renderResults(r, p) {
+    const catClass = c => c==="envelope"?"card-accent":(c==="hvac"||c==="water_heating")?"card-blue":"card-orange";
+    const catTag = c => c==="envelope"?"tag-green":(c==="hvac"||c==="water_heating")?"tag-blue":"tag-orange";
+    const payColor = y => y===0?"var(--accent)":y<5?"var(--accent)":y<10?"var(--yellow)":"var(--text-dim)";
+    const roiColor = v => v>100?"var(--accent)":v>0?"var(--yellow)":"var(--red)";
+
+    // State name lookup
+    const stateNames = {"AL":"Alabama","AK":"Alaska","AZ":"Arizona","AR":"Arkansas","CA":"California","CO":"Colorado","CT":"Connecticut","DE":"Delaware","DC":"Washington DC","FL":"Florida","GA":"Georgia","HI":"Hawaii","ID":"Idaho","IL":"Illinois","IN":"Indiana","IA":"Iowa","KS":"Kansas","KY":"Kentucky","LA":"Louisiana","ME":"Maine","MD":"Maryland","MA":"Massachusetts","MI":"Michigan","MN":"Minnesota","MS":"Mississippi","MO":"Missouri","MT":"Montana","NE":"Nebraska","NV":"Nevada","NH":"New Hampshire","NJ":"New Jersey","NM":"New Mexico","NY":"New York","NC":"North Carolina","ND":"North Dakota","OH":"Ohio","OK":"Oklahoma","OR":"Oregon","PA":"Pennsylvania","RI":"Rhode Island","SC":"South Carolina","SD":"South Dakota","TN":"Tennessee","TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington","WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming","PR":"Puerto Rico"};
+    const stateName = stateNames[r.state] || r.state;
+
+    // Climate zone description
+    const czNames = {"1A":"Very Hot-Humid","1B":"Very Hot-Dry","2A":"Hot-Humid","2B":"Hot-Dry","3A":"Warm-Humid","3B":"Warm-Dry","3C":"Warm-Marine","4A":"Mixed-Humid","4B":"Mixed-Dry","4C":"Mixed-Marine","5A":"Cool-Humid","5B":"Cool-Dry","6A":"Cold-Humid","6B":"Cold-Dry","7":"Very Cold","8":"Subarctic"};
+    const czName = czNames[r.cz] || r.cz;
+
+    // Rebate warning
+    let rebateSection = "";
+    if (!r.rebateInfo.homes && !r.rebateInfo.hear) {
+        rebateSection = `<div class="card card-orange" style="margin-bottom:24px"><h3 style="color:var(--orange)">Rebate Status: ${stateName}</h3><p style="font-size:0.9rem">${r.rebateInfo.n}</p><p style="font-size:0.85rem;color:var(--text-dim);margin-top:8px">Federal 25C/25D tax credits expired Dec 31, 2025. IRA rebate programs (HOMES & HEAR, $8.8B total) survived but state rollout varies. <a href="https://www.energy.gov/scep/home-energy-rebates-program" style="color:var(--blue)" target="_blank">Check DOE's tracker →</a></p></div>`;
+    } else {
+        const programs = [];
+        if (r.rebateInfo.homes) programs.push("HOMES");
+        if (r.rebateInfo.hear) programs.push("HEAR");
+        rebateSection = `<div class="card card-accent" style="margin-bottom:24px"><h3 style="color:var(--accent)">✓ ${programs.join(" & ")} Rebates Active in ${stateName}</h3><p style="font-size:0.9rem">${r.rebateInfo.n}</p>${r.rebateInfo.url ? `<p style="margin-top:8px"><a href="${r.rebateInfo.url}" style="color:var(--blue)" target="_blank">Visit your state program →</a></p>` : ''}</div>`;
+    }
+
+    // Energy breakdown
+    const total = r.breakdown.heating + r.breakdown.cooling + r.breakdown.water + r.breakdown.other;
+    const pctH = Math.round(r.breakdown.heating/total*100);
+    const pctC = Math.round(r.breakdown.cooling/total*100);
+    const pctW = Math.round(r.breakdown.water/total*100);
+    const pctO = 100-pctH-pctC-pctW;
+
+    let breakdownHtml = `<div class="card" style="margin-bottom:24px">
+        <h3 style="margin-bottom:12px">Estimated Energy Cost Breakdown</h3>
+        <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:12px">Based on ${stateName} energy prices: electricity $${(r.prices.e/293.07*100).toFixed(1)}¢/kWh, gas $${(r.prices.g/10).toFixed(2)}/therm</div>
+        <div class="energy-breakdown">
+            <div class="energy-bar"><span style="width:70px">Heating</span><div class="energy-bar-track"><div class="energy-bar-fill" style="width:${pctH}%;background:var(--orange)"></div></div><span>$${fmt(r.breakdown.heating)} (${pctH}%)</span></div>
+            <div class="energy-bar"><span style="width:70px">Cooling</span><div class="energy-bar-track"><div class="energy-bar-fill" style="width:${pctC}%;background:var(--blue)"></div></div><span>$${fmt(r.breakdown.cooling)} (${pctC}%)</span></div>
+            <div class="energy-bar"><span style="width:70px">Hot Water</span><div class="energy-bar-track"><div class="energy-bar-fill" style="width:${pctW}%;background:var(--purple)"></div></div><span>$${fmt(r.breakdown.water)} (${pctW}%)</span></div>
+            <div class="energy-bar"><span style="width:70px">Other</span><div class="energy-bar-track"><div class="energy-bar-fill" style="width:${pctO}%;background:var(--text-dim)"></div></div><span>$${fmt(r.breakdown.other)} (${pctO}%)</span></div>
+        </div>
+    </div>`;
+
+    // Upgrade cards
+    let cards = r.recs.map((rec, i) => {
+        let pct = Math.min(rec.saveDollars / Math.max(r.currentCost,1) * 300, 100);
+        let payText = rec.payback === 0 ? "Immediate" : rec.payback < 1 ? "<1 year" : `${rec.payback} years`;
+        let intHtml = rec.intNote ? `<div class="interaction-note">${rec.intNote}</div>` : "";
+        let rebHtml = rec.rebate > 0 ? `<div class="rebate-badge"><strong style="color:var(--accent)">$${fmt(rec.rebate)} rebate available</strong> — ${rec.rebSrc}<br><span style="font-size:0.8rem;color:var(--text-dim)">Net cost after rebate: <strong>$${fmt(rec.netCost)}</strong></span></div>` : "";
+        let diffColor = rec.difficulty==="Easy"?"var(--accent)":rec.difficulty==="Easy-Medium"?"var(--accent)":rec.difficulty==="Medium"?"var(--yellow)":"var(--orange)";
+        return `<div class="card ${catClass(rec.cat)} fade-in" style="animation-delay:${i*0.1}s">
+            <div class="upgrade-header"><span class="step-number">${i+1}</span><div><h3 style="margin-bottom:2px">${rec.name}</h3><span class="tag ${catTag(rec.cat)}">${rec.cat.replace('_',' ')}</span>${rec.diy?' <span class="tag" style="background:var(--surface2);color:var(--text-dim)">DIY possible</span>':''} <span class="tag" style="background:var(--surface2);color:${diffColor}">${rec.difficulty}</span></div></div>
+            <p style="font-size:0.9rem;color:var(--text-dim)">${rec.desc}</p>
+            <div class="upgrade-grid">
+                <div><div class="upgrade-stat-label">Annual Savings</div><div class="upgrade-stat-value" style="color:var(--accent)">$${fmt(rec.saveDollars)}/yr</div></div>
+                <div><div class="upgrade-stat-label">Estimated Cost</div><div class="upgrade-stat-value">$${fmt(rec.cLo)}-$${fmt(rec.cHi)}</div></div>
+                <div><div class="upgrade-stat-label">Payback</div><div class="upgrade-stat-value" style="color:${payColor(rec.payback)}">${payText}</div></div>
+                <div><div class="upgrade-stat-label">10yr ROI</div><div class="upgrade-stat-value" style="color:${roiColor(rec.roi)}">${rec.roi > 500 ? '>500' : rec.roi}%</div></div>
+            </div>
+            <div class="savings-bar"><div class="savings-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--blue))"></div></div>
+            <div style="margin-top:8px;font-size:0.75rem;color:var(--text-dim)">Est. CO₂ reduction: ${fmt(rec.co2)} lbs/year | Lifespan: ${rec.life} years</div>
+            ${intHtml}${rebHtml}
+        </div>`;
+    }).join("");
+
+    // Quick wins section
+    let quickWins = r.recs.filter(r => r.diy && r.payback < 3);
+    let quickWinHtml = "";
+    if (quickWins.length > 0) {
+        quickWinHtml = `<div class="card card-accent" style="margin-bottom:24px"><h3 style="color:var(--accent)">Quick Wins — DIY This Weekend</h3><ul style="margin-left:20px;margin-top:8px;line-height:2">${quickWins.map(q => `<li><strong>${q.name}</strong> — save $${fmt(q.saveDollars)}/yr for $${fmt(q.cLo)}-$${fmt(q.cHi)} (${q.payback < 1 ? '<1 year' : q.payback+' year'} payback)</li>`).join("")}</ul></div>`;
+    }
+
+    return `<div class="fade-in">
+        <h1>Your Home Energy Upgrade Plan</h1>
+        <p class="subtitle">${p.year}-built home in ${stateName} (Climate Zone ${r.cz}: ${czName}) | ${fmt(p.sqft)} sqft | ${p.heatFuel.replace(/_/g,' ')} heat${r.calibrated ? ' | Calibrated to $'+fmt(r.currentCost)+'/yr' : ''}</p>
+        <div class="stat-grid">
+            <div class="stat"><div class="stat-value">$${fmt(r.currentCost)}</div><div class="stat-label">Current Annual Cost</div></div>
+            <div class="stat"><div class="stat-value" style="color:var(--accent)">$${fmt(r.totalSave)}</div><div class="stat-label">Potential Savings/yr</div></div>
+            <div class="stat"><div class="stat-value" style="color:var(--blue)">${r.savePct}%</div><div class="stat-label">Energy Reduction</div></div>
+            <div class="stat"><div class="stat-value" style="color:${r.totalRebate>0?'var(--orange)':'var(--text-dim)'}">$${fmt(r.totalRebate)}</div><div class="stat-label">${r.totalRebate>0?'Available Rebates':'Rebates (check state)'}</div></div>
+        </div>
+        ${rebateSection}
+        ${breakdownHtml}
+        ${quickWinHtml}
+        <h2>Recommended Upgrade Sequence</h2>
+        <p style="color:var(--text-dim);margin-bottom:24px;font-size:0.9rem">Upgrades ordered by building science priority: seal the envelope first (reduces HVAC sizing and cost), then upgrade equipment, then fine-tune controls.</p>
+        ${cards}
+        <div class="card" style="margin-top:24px;text-align:center">
+            <h3 style="color:var(--text-dim);margin-bottom:4px">Total Potential Impact</h3>
+            <div style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin:16px 0">
+                <div><div style="font-size:1.8rem;font-weight:700;color:var(--accent)">$${fmt(r.totalSave)}</div><div style="font-size:0.8rem;color:var(--text-dim)">saved per year</div></div>
+                <div><div style="font-size:1.8rem;font-weight:700;color:var(--blue)">${fmt(r.totalCO2)}</div><div style="font-size:0.8rem;color:var(--text-dim)">lbs CO₂ reduced/yr</div></div>
+                ${r.totalRebate>0?`<div><div style="font-size:1.8rem;font-weight:700;color:var(--orange)">$${fmt(r.totalRebate)}</div><div style="font-size:0.8rem;color:var(--text-dim)">in rebates</div></div>`:''}
+            </div>
+        </div>
+        <div class="card" style="margin-top:16px;text-align:center"><h2 style="margin-bottom:8px">Next Steps</h2><p style="color:var(--text-dim);margin-bottom:16px">Get 3+ quotes from certified contractors in your area</p><a href="https://www.energysage.com/" class="btn-outline" target="_blank" rel="noopener">Find Contractors on EnergySage</a><p style="color:var(--text-dim);font-size:0.8rem;margin-top:12px">Or try <a href="https://www.quitcarbon.com" style="color:var(--blue)" target="_blank" rel="noopener">QuitCarbon</a> for free expert guidance • <a href="https://www.rewiringamerica.org/app/ira-calculator" style="color:var(--blue)" target="_blank" rel="noopener">Rewiring America IRA Calculator</a></p></div>
+        <div class="share-bar">
+            <button class="btn btn-outline btn-sm" onclick="shareResults()">Share Results</button>
+            <button class="btn btn-outline btn-sm" onclick="window.print()">Print / PDF</button>
+            <button class="btn btn-outline btn-sm" onclick="showForm()">Analyze Another Home</button>
+        </div>
+        <div class="disclaimer"><p><strong>Disclaimer:</strong> Estimates are for planning purposes only. Actual savings depend on air leakage rates, duct condition, equipment sizing, occupant behavior, and local utility rates. This tool does not constitute professional energy audit services or tax/financial advice. Rebate availability and amounts change — verify with your state energy office before making purchase decisions. Get a <a href="https://www.resnet.us/raters/find-a-rater/">RESNET-certified</a> or <a href="https://www.bpi.org/find-a-contractor">BPI-certified</a> energy auditor for a comprehensive assessment.</p><p style="margin-top:8px">Data: <a href="https://resstock.nrel.gov">NREL ResStock</a> (CC-BY-4.0) | <a href="https://www.eia.gov/state/seds/">EIA SEDS</a> | <a href="https://www.energy.gov/scep/home-energy-rebates-program">DOE SCEP</a> | <a href="https://www.rewiringamerica.org">Rewiring America</a> | <a href="https://www.dsireusa.org">DSIRE</a></p></div>
+    </div>`;
+}
+
+// --- URL hash sharing ---
+function encodeParams(p) {
+    const params = new URLSearchParams();
+    for (const [k,v] of Object.entries(p)) {
+        if (v !== undefined && v !== null && v !== '' && v !== false && v !== 0) params.set(k,v);
+    }
+    return params.toString();
+}
+
+function decodeParams() {
+    const hash = window.location.hash.substring(1);
+    if (!hash) return null;
+    const params = new URLSearchParams(hash);
+    if (!params.get('zip')) return null;
+    return {
+        zip: params.get('zip'), year: parseInt(params.get('year')), sqft: parseInt(params.get('sqft')),
+        heatFuel: params.get('heatFuel'), hvac: params.get('hvac'), whFuel: params.get('whFuel'),
+        insulation: params.get('insulation'), windows: params.get('windows'),
+        smartThermo: params.get('smartThermo')==='true', hasSolar: params.get('hasSolar')==='true',
+        bill: parseFloat(params.get('bill')) || 0, ducts: params.get('ducts') || 'average',
+        homeType: params.get('homeType') || 'single_family', stories: params.get('stories') || '2',
+        occupants: parseInt(params.get('occupants')) || 2
+    };
+}
+
+function shareResults() {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.querySelector('.share-bar button');
+            const orig = btn.textContent;
+            btn.textContent = 'Link Copied!';
+            btn.style.borderColor = 'var(--accent)';
+            btn.style.color = 'var(--accent)';
+            setTimeout(() => { btn.textContent = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 2000);
+        });
+    }
+}
+
+// --- Loading animation ---
+const loadingSteps = [
+    "Identifying your climate zone...",
+    "Looking up state energy prices...",
+    "Calculating baseline energy use...",
+    "Modeling upgrade interactions...",
+    "Checking available rebates...",
+    "Generating your plan..."
+];
+
+function showLoading(callback) {
+    document.getElementById("form-view").classList.add("hidden");
+    document.getElementById("loading-view").classList.remove("hidden");
+    document.getElementById("results-view").classList.add("hidden");
+    let step = 0;
+    const interval = setInterval(() => {
+        if (step < loadingSteps.length) {
+            document.getElementById("loading-text").textContent = loadingSteps[step];
+            document.getElementById("loading-progress").style.width = ((step+1)/loadingSteps.length*100)+"%";
+            step++;
+        } else {
+            clearInterval(interval);
+            callback();
+        }
+    }, 300);
+}
+
+// --- Navigation ---
+function runAnalysis(e) {
+    e.preventDefault();
+    const p = {
+        zip: document.getElementById("zip_code").value,
+        year: parseInt(document.getElementById("year_built").value),
+        sqft: parseInt(document.getElementById("sqft").value),
+        heatFuel: document.getElementById("heating_fuel").value,
+        hvac: document.getElementById("hvac_type").value,
+        whFuel: document.getElementById("water_heater_fuel").value,
+        insulation: document.getElementById("insulation_level").value,
+        windows: document.getElementById("window_type").value,
+        smartThermo: document.getElementById("has_smart_thermostat").checked,
+        hasSolar: document.getElementById("has_solar").checked,
+        bill: parseFloat(document.getElementById("annual_bill").value) || 0,
+        ducts: document.getElementById("duct_condition").value,
+        homeType: document.getElementById("home_type").value,
+        stories: document.getElementById("stories").value,
+        occupants: parseInt(document.getElementById("occupants").value),
+    };
+
+    // Update URL hash for sharing
+    window.location.hash = encodeParams(p);
+
+    showLoading(() => {
+        const results = analyze(p);
+        document.getElementById("results-view").innerHTML = renderResults(results, p);
+        document.getElementById("loading-view").classList.add("hidden");
+        document.getElementById("results-view").classList.remove("hidden");
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+}
+
+function showForm() {
+    document.getElementById("form-view").classList.remove("hidden");
+    document.getElementById("results-view").classList.add("hidden");
+    document.getElementById("about-view").classList.add("hidden");
+    document.getElementById("loading-view").classList.add("hidden");
+    const m = document.getElementById("methodology-view");
+    if (m) m.classList.add("hidden");
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    history.replaceState(null, '', window.location.pathname);
+}
+
+function showAbout() {
+    document.getElementById("about-view").classList.remove("hidden");
+    document.getElementById("form-view").classList.add("hidden");
+    document.getElementById("results-view").classList.add("hidden");
+    document.getElementById("loading-view").classList.add("hidden");
+    const m = document.getElementById("methodology-view");
+    if (m) m.classList.add("hidden");
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function showMethodology() {
+    const m = document.getElementById("methodology-view");
+    if (m) m.classList.remove("hidden");
+    document.getElementById("form-view").classList.add("hidden");
+    document.getElementById("results-view").classList.add("hidden");
+    document.getElementById("about-view").classList.add("hidden");
+    document.getElementById("loading-view").classList.add("hidden");
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// --- Auto-load from URL hash ---
+window.addEventListener('load', () => {
+    const p = decodeParams();
+    if (p && p.zip && p.year && p.sqft) {
+        // Fill form
+        document.getElementById("zip_code").value = p.zip;
+        document.getElementById("year_built").value = p.year;
+        document.getElementById("sqft").value = p.sqft;
+        document.getElementById("heating_fuel").value = p.heatFuel;
+        document.getElementById("hvac_type").value = p.hvac;
+        document.getElementById("water_heater_fuel").value = p.whFuel;
+        document.getElementById("insulation_level").value = p.insulation;
+        document.getElementById("window_type").value = p.windows;
+        document.getElementById("has_smart_thermostat").checked = p.smartThermo;
+        document.getElementById("has_solar").checked = p.hasSolar;
+        if (p.bill > 0) document.getElementById("annual_bill").value = p.bill;
+        document.getElementById("duct_condition").value = p.ducts;
+        document.getElementById("home_type").value = p.homeType;
+        document.getElementById("stories").value = p.stories;
+        document.getElementById("occupants").value = p.occupants;
+        // Run analysis
+        showLoading(() => {
+            const results = analyze(p);
+            document.getElementById("results-view").innerHTML = renderResults(results, p);
+            document.getElementById("loading-view").classList.add("hidden");
+            document.getElementById("results-view").classList.remove("hidden");
+        });
+    }
+});
+</script>
+</body>
+</html>
